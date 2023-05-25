@@ -34,7 +34,7 @@ func AddClaimHashAndTransitAndWait(rpcUrl string, contractAddress string, pk str
 	for {
 		header, _ := client.HeaderByNumber(context.Background(), nil)
 		passedBlocks := big.NewInt(0).Sub(header.Number, r.BlockNumber)
-		if big.NewInt(2).Cmp(passedBlocks) == 0 {
+		if big.NewInt(2).Cmp(passedBlocks) == -1 {
 			break
 		}
 	}
