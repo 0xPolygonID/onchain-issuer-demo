@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/iden3/issuer-on-chain-backend/handlers"
 	"github.com/iden3/issuer-on-chain-backend/repository"
 	"github.com/iden3/issuer-on-chain-backend/services"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -46,9 +48,18 @@ func main() {
 }
 
 func initRepository() (*repository.CredentialRepository, error) {
-	db, err := mongo.NewClient(options.Client().ApplyURI(common.MongoDBHost))
+	opts := options.Client().ApplyURI(common.MongoDBHost)
+	// Create a new client and connect to the server
+	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed connect to mongodb")
 	}
-	return repository.NewCredentialRepository(db.Database("master"))
+	if err = client.Ping(context.Background(), nil); err != nil {
+		return nil, errors.Wrap(err, "failed ping to mongodb")
+	}
+	rep, err := repository.NewCredentialRepository(client.Database("credentials"))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed create repository")
+	}
+	return rep, nil
 }
