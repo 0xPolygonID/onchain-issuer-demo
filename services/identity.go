@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
+	"github.com/0xPolygonID/onchain-issuer-demo/repository"
 	core "github.com/iden3/go-iden3-core"
-	"github.com/iden3/issuer-on-chain-backend/repository"
 )
 
 // IdentityService service
