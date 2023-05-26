@@ -4,11 +4,16 @@ go 1.20
 
 require (
 	github.com/ethereum/go-ethereum v1.12.0
+	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/google/uuid v1.3.0
+	github.com/iden3/go-circuits v1.0.3
 	github.com/iden3/go-iden3-core v1.0.2
 	github.com/iden3/go-iden3-core/v2 v2.0.0-20230519124718-42b31ff46f37
 	github.com/iden3/go-schema-processor v1.1.6-0.20230524185452-6c1d1062024a
+	github.com/iden3/iden3comm v1.0.0
+	github.com/jackc/pgtype v1.14.0
+	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.2
 	go.mongodb.org/mongo-driver v1.11.6
 )
@@ -40,7 +45,14 @@ require (
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.2-0.20230321075855-87b91420868c // indirect
 	github.com/iden3/go-iden3-crypto v0.0.15 // indirect
+	github.com/iden3/go-jwz v1.0.0 // indirect
 	github.com/iden3/go-merkletree-sql/v2 v2.0.4 // indirect
+	github.com/iden3/go-rapidsnark/prover v0.0.10 // indirect
+	github.com/iden3/go-rapidsnark/types v0.0.3 // indirect
+	github.com/iden3/go-rapidsnark/verifier v0.0.5 // indirect
+	github.com/iden3/go-rapidsnark/witness v0.0.6 // indirect
+	github.com/iden3/wasmer-go v0.0.1 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -50,7 +62,6 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/piprate/json-gold v0.5.1-0.20230111113000-6ddbe6e6f19f // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
@@ -75,5 +86,6 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

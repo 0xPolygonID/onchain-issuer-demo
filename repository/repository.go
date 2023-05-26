@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
+	core "github.com/iden3/go-iden3-core"
 	"github.com/iden3/go-schema-processor/verifiable"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -82,4 +84,14 @@ func (cs *CredentialRepository) Create(
 		return "", err
 	}
 	return res.InsertedID.(string), nil
+}
+
+// todo: implement
+func (cs *CredentialRepository) GetCredentialById(ctx context.Context, identifier *core.DID, claimID uuid.UUID) (*verifiable.W3CCredential, error) {
+	return nil, nil
+}
+
+// todo: implement
+func (cs *CredentialRepository) GetIdentityByID(ctx context.Context, identifier *core.DID) (*verifiable.W3CCredential, error) {
+	return nil, nil
 }

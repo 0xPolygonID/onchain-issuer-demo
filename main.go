@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -37,6 +38,7 @@ func main() {
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Post("/identities/{identifier}/claims", h.CreateClaim)
+			r.Post("/agent", h.Handle)
 			// r.Get("/identities/{identifier}/claims", handlers.GetClaimsList)
 			// r.Get("/identities/{identifier}/claims/{claimId}", handlers.GetClaim)
 		})
@@ -50,5 +52,12 @@ func initRepository() (*repository.CredentialRepository, error) {
 	if err != nil {
 		return nil, err
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err = db.Connect(ctx)
+	if err != nil {
+		log.Fatal("Context error, mongoDB:", err)
+	}
+
 	return repository.NewCredentialRepository(db.Database("master"))
 }
