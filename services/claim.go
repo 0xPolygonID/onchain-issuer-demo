@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/0xPolygonID/issuer-on-chain-backend/common"
 	ethcomm "github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	core "github.com/iden3/go-iden3-core/v2"
 	"github.com/iden3/go-iden3-core/v2/w3c"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
-	"github.com/iden3/issuer-on-chain-backend/common"
 )
 
 var (

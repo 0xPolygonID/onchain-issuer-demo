@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/0xPolygonID/issuer-on-chain-backend/services"
 	"github.com/go-chi/chi/v5"
-	"github.com/iden3/issuer-on-chain-backend/services"
 )
 
 type Handlers struct {

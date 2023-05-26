@@ -1,4 +1,4 @@
-module github.com/iden3/issuer-on-chain-backend
+module github.com/0xPolygonID/issuer-on-chain-backend
 
 go 1.20
 
