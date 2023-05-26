@@ -21,6 +21,6 @@ func init() {
 	}
 	MongoDBHost = os.Getenv("MONGODB_HOST")
 	if MongoDBHost == "" {
-		MongoDBHost = "mongodb://localhost:27017/credentials/?timeoutMS=5000"
+		MongoDBHost = "mongodb://localhost:27017/credentials"
 	}
 }
