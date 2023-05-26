@@ -6,6 +6,7 @@ import (
 
 	"github.com/iden3/go-schema-processor/verifiable"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -81,5 +82,6 @@ func (cs *CredentialRepository) Create(
 	if err != nil {
 		return "", err
 	}
-	return res.InsertedID.(string), nil
+	id := res.InsertedID.(primitive.ObjectID)
+	return id.Hex(), nil
 }

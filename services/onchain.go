@@ -51,7 +51,9 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 
 	coreClaim, err := BuildCoreClaim(
-		schema, schemaBytes, w3cCred, credentialReq, 0, 0)
+		schema, schemaBytes, w3cCred, credentialReq,
+		w3cCred.CredentialStatus.(verifiable.CredentialStatus).RevocationNonce,
+		credentialReq.Version)
 	if err != nil {
 		return "", err
 	}

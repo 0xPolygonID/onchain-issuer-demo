@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -48,18 +49,18 @@ func main() {
 }
 
 func initRepository() (*repository.CredentialRepository, error) {
+	fmt.Println("Connecting to MongoDB: ", common.MongoDBHost)
 	opts := options.Client().ApplyURI(common.MongoDBHost)
-	// Create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), opts)
+	client, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed connect to mongodb")
+		return nil, errors.Wrap(err, "failed to connect to mongo")
 	}
 	if err = client.Ping(context.Background(), nil); err != nil {
-		return nil, errors.Wrap(err, "failed ping to mongodb")
+		return nil, errors.Wrap(err, "failed to ping mongo")
 	}
 	rep, err := repository.NewCredentialRepository(client.Database("credentials"))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed create repository")
+		return nil, errors.Wrap(err, "failed to create credential repository")
 	}
 	return rep, nil
 }
