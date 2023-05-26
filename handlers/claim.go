@@ -143,11 +143,11 @@ func (h *Handlers) handleCredentialFetchRequest(ctx context.Context, basicMessag
 		return nil, fmt.Errorf("invalid issuer id in base message: %w", err)
 	}
 
-	// var userDID *core.DID
-	// userDID, err = core.ParseDID(basicMessage.From)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("invalid user id in base message: %w", err)
-	// }
+	var userDID *core.DID
+	userDID, err = core.ParseDID(basicMessage.From)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user id in base message: %w", err)
+	}
 
 	var claimID uuid.UUID
 	claimID, err = uuid.Parse(fetchRequestBody.ID)
@@ -160,9 +160,9 @@ func (h *Handlers) handleCredentialFetchRequest(ctx context.Context, basicMessag
 		return nil, fmt.Errorf("failed get claim by claimID: %w", err)
 	}
 
-	// if claim.OtherIdentifier != userDID.String() {
-	// 	return nil, errors.New("claim doesn't relate to sender")
-	// }
+	if cred.CredentialSubject["id"] != userDID.String() {
+		return nil, errors.New("claim doesn't relate to sender")
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("failed convert claim: %w", err)
