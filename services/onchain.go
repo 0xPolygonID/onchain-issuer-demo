@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/0xPolygonID/issuer-on-chain-backend/repository"
+	"github.com/0xPolygonID/onchain-issuer-demo/repository"
 	core "github.com/iden3/go-iden3-core"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"

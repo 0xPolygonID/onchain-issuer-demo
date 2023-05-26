@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/0xPolygonID/issuer-on-chain-backend/common"
+	"github.com/0xPolygonID/onchain-issuer-demo/common"
 	ethcomm "github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	core "github.com/iden3/go-iden3-core/v2"
