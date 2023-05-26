@@ -49,7 +49,7 @@ func (oc *OnChain) CreateClaimOnChain(
 	if err != nil {
 		return "", err
 	}
-
+	mustPritnVC(w3cCred)
 	coreClaim, err := BuildCoreClaim(
 		schema, schemaBytes, w3cCred, credentialReq,
 		w3cCred.CredentialStatus.(verifiable.CredentialStatus).RevocationNonce,
@@ -57,15 +57,12 @@ func (oc *OnChain) CreateClaimOnChain(
 	if err != nil {
 		return "", err
 	}
-
+	mustPrintCoreClain(coreClaim)
 	// TODO: write to smart contract
 	id, err := oc.CredentialRepository.Create(ctx, w3cCred)
 	if err != nil {
 		return "", err
 	}
-
-	mustPrintCoreClain(coreClaim)
-	mustPritnVC(w3cCred)
 
 	return id, nil
 }
