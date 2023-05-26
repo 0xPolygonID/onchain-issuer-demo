@@ -8,14 +8,14 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/0xPolygonID/onchain-issuer-demo/repository"
+	"github.com/0xPolygonID/onchain-issuer-demo/services"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	core "github.com/iden3/go-iden3-core"
 	"github.com/iden3/iden3comm"
 	"github.com/iden3/iden3comm/packers"
 	"github.com/iden3/iden3comm/protocol"
-	"github.com/iden3/issuer-on-chain-backend/repository"
-	"github.com/iden3/issuer-on-chain-backend/services"
 )
 
 type Handlers struct {

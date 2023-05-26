@@ -1,4 +1,4 @@
-module github.com/iden3/issuer-on-chain-backend
+module github.com/0xPolygonID/onchain-issuer-demo
 
 go 1.20
 
@@ -7,12 +7,10 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/google/uuid v1.3.0
-	github.com/iden3/go-circuits v1.0.3
 	github.com/iden3/go-iden3-core v1.0.2
 	github.com/iden3/go-iden3-core/v2 v2.0.0-20230519124718-42b31ff46f37
 	github.com/iden3/go-schema-processor v1.1.6-0.20230524185452-6c1d1062024a
 	github.com/iden3/iden3comm v1.0.0
-	github.com/jackc/pgtype v1.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.2
 	go.mongodb.org/mongo-driver v1.11.6
@@ -38,12 +36,14 @@ require (
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.2-0.20230321075855-87b91420868c // indirect
+	github.com/iden3/go-circuits v1.0.3 // indirect
 	github.com/iden3/go-iden3-crypto v0.0.15 // indirect
 	github.com/iden3/go-jwz v1.0.0 // indirect
 	github.com/iden3/go-merkletree-sql/v2 v2.0.4 // indirect
@@ -52,7 +52,6 @@ require (
 	github.com/iden3/go-rapidsnark/verifier v0.0.5 // indirect
 	github.com/iden3/go-rapidsnark/witness v0.0.6 // indirect
 	github.com/iden3/wasmer-go v0.0.1 // indirect
-	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect

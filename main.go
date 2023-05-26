@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/iden3/issuer-on-chain-backend/common"
-	"github.com/iden3/issuer-on-chain-backend/handlers"
-	"github.com/iden3/issuer-on-chain-backend/repository"
-	"github.com/iden3/issuer-on-chain-backend/services"
+	"github.com/0xPolygonID/onchain-issuer-demo/common"
+	"github.com/0xPolygonID/onchain-issuer-demo/handlers"
+	"github.com/0xPolygonID/onchain-issuer-demo/repository"
+	"github.com/0xPolygonID/onchain-issuer-demo/services"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -48,16 +50,18 @@ func main() {
 }
 
 func initRepository() (*repository.CredentialRepository, error) {
-	db, err := mongo.NewClient(options.Client().ApplyURI(common.MongoDBHost))
+	fmt.Println("Connecting to MongoDB: ", common.MongoDBHost)
+	opts := options.Client().ApplyURI(common.MongoDBHost)
+	client, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to connect to mongo")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	err = db.Connect(ctx)
+	if err = client.Ping(context.Background(), nil); err != nil {
+		return nil, errors.Wrap(err, "failed to ping mongo")
+	}
+	rep, err := repository.NewCredentialRepository(client.Database("credentials"))
 	if err != nil {
-		log.Fatal("Context error, mongoDB:", err)
+		return nil, errors.Wrap(err, "failed to create credential repository")
 	}
-
-	return repository.NewCredentialRepository(db.Database("master"))
+	return rep, nil
 }

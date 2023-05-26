@@ -7,10 +7,10 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/0xPolygonID/onchain-issuer-demo/repository"
 	core "github.com/iden3/go-iden3-core"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
-	"github.com/iden3/issuer-on-chain-backend/repository"
 )
 
 type OnChain struct {
@@ -51,7 +51,9 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 
 	coreClaim, err := BuildCoreClaim(
-		schema, schemaBytes, w3cCred, credentialReq, 0, 0)
+		schema, schemaBytes, w3cCred, credentialReq,
+		w3cCred.CredentialStatus.(verifiable.CredentialStatus).RevocationNonce,
+		credentialReq.Version)
 	if err != nil {
 		return "", err
 	}
