@@ -108,7 +108,7 @@ func buildCredentialStatus(issuer string) (verifiable.CredentialStatus, error) {
 
 func newCredentialID(issuer string) string {
 	return fmt.Sprintf(
-		"http://%s/api/v1/identities/%s/claims/%s",
+		"%s/api/v1/identities/%s/claims/%s",
 		common.ExternalServerHost, issuer, uuid.New().String())
 }
 

@@ -1,107 +1,184 @@
-package onChainIssuer
+package blockchain
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"math"
 	"math/big"
+	"time"
 
-	ethereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/consensus/misc"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/iden3/go-merkletree-sql/v2"
+	"github.com/iden3/go-schema-processor/verifiable"
 )
 
-func AddClaimHashAndTransitAndWait(rpcUrl string, contractAddress string, pk string, hashIndex *big.Int, hashValue *big.Int) (*types.Receipt, error) {
+const blockConfirmations = 2
+
+// ProcessOnChainClaim send transaction to blockchain
+// and wait for the transaction to be mined and confirmed (2 blocks)
+func ProcessOnChainClaim(
+	rpcUrl string,
+	contractAddress string,
+	pk string,
+	hashIndex *big.Int,
+	hashValue *big.Int,
+) (verifiable.Iden3SparseMerkleTreeProof, error) {
 	client, err := ethclient.Dial(rpcUrl)
 	if err != nil {
-		return nil, err
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
+	defer client.Close()
 
-	tx, err := SendSignedTxAddClaimHashAndTransit(client, pk, contractAddress, hashIndex, hashValue)
-
+	chid, err := client.ChainID(context.Background())
 	if err != nil {
-		return nil, err
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
+
+	onChainIssuer, err := NewIdentity(
+		common.HexToAddress(contractAddress),
+		client,
+	)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+
+	tx, err := sendTx(
+		onChainIssuer,
+		pk,
+		hashIndex,
+		hashValue,
+		chid,
+	)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+
 	r, err := bind.WaitMined(context.Background(), client, tx)
 	if err != nil {
-		return nil, err
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
+
+	tick := time.NewTicker(5 * time.Second)
+	defer tick.Stop()
+
 	for {
-		header, _ := client.HeaderByNumber(context.Background(), nil)
+		<-tick.C
+		header, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			return verifiable.Iden3SparseMerkleTreeProof{}, err
+		}
 		passedBlocks := big.NewInt(0).Sub(header.Number, r.BlockNumber)
-		if big.NewInt(2).Cmp(passedBlocks) == -1 {
+		if big.NewInt(blockConfirmations).Cmp(passedBlocks) == -1 {
 			break
 		}
 	}
-	return r, nil
+
+	mtpProof, err := buildMTPProof(onChainIssuer, hashIndex)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+
+	return mtpProof, nil
 }
 
-func SendSignedTxAddClaimHashAndTransit(client *ethclient.Client, pk string, contractAddress string,
-	hashIndex *big.Int, hashValue *big.Int) (*types.Transaction, error) {
-	privateKey, _ := crypto.HexToECDSA(pk)
-	publicKey := privateKey.Public()
-	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	toAddress := common.HexToAddress(contractAddress)
-
-	nonce, _ := client.PendingNonceAt(context.Background(), fromAddress)
-
-	ab, _ := IdentityMetaData.GetAbi()
-	payload, err := ab.Pack("addClaimHashAndTransit", hashIndex, hashValue)
+func sendTx(
+	onChainIssuer *Identity,
+	pk string,
+	hashIndex *big.Int,
+	hashValue *big.Int,
+	chid *big.Int,
+) (*types.Transaction, error) {
+	privateKey, err := crypto.HexToECDSA(pk)
 	if err != nil {
 		return nil, err
 	}
 
-	// gasLimit := uint64(9000000) // in units
-	gasLimit, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
-		From:  fromAddress, // the sender of the 'transaction'
-		To:    &toAddress,
-		Gas:   0,             // wei <-> gas exchange ratio
-		Value: big.NewInt(0), // amount of wei sent along with the call
-		Data:  payload,
-	})
+	opts, err := bind.NewKeyedTransactorWithChainID(
+		privateKey,
+		chid,
+	)
 	if err != nil {
 		return nil, err
 	}
-	value := big.NewInt(0)
-
-	cid, _ := client.ChainID(context.Background())
-
-	latestBlockHeader, err := client.HeaderByNumber(context.Background(), nil)
+	tx, err := onChainIssuer.AddClaimHashAndTransit(
+		opts, hashIndex, hashValue,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	baseFee := misc.CalcBaseFee(&params.ChainConfig{LondonBlock: big.NewInt(1)}, latestBlockHeader)
-	b := math.Round(float64(baseFee.Int64()) * 1.25)
-	baseFee = big.NewInt(int64(b))
-	gasTip, err := client.SuggestGasTipCap(context.Background())
+	return tx, nil
+}
+
+func buildMTPProof(
+	onChainIssuer *Identity,
+	claimIndexHash *big.Int,
+) (verifiable.Iden3SparseMerkleTreeProof, error) {
+	proof, err := onChainIssuer.GetClaimProof(&bind.CallOpts{}, claimIndexHash)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+	bigState, err := onChainIssuer.GetIdentityLatestState(&bind.CallOpts{})
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+	roots, err := onChainIssuer.GetRootsByState(&bind.CallOpts{}, bigState)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+
+	rootOfRoots := roots.RevocationsRoot.Text(16)
+	claimTreeRoot := roots.ClaimsRoot.Text(16)
+	revocationTreeRoot := roots.RevocationsRoot.Text(16)
+	state := bigState.Text(16)
+
+	mtp, err := convertChainProofToMerkleProof(&proof)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+
+	return verifiable.Iden3SparseMerkleTreeProof{
+		Type: verifiable.Iden3SparseMerkleTreeProofType,
+		IssuerData: verifiable.IssuerData{
+			State: verifiable.State{
+				RootOfRoots:        &rootOfRoots,
+				ClaimsTreeRoot:     &claimTreeRoot,
+				RevocationTreeRoot: &revocationTreeRoot,
+				Value:              &state,
+			},
+		},
+		MTP: mtp,
+	}, nil
+}
+
+func convertChainProofToMerkleProof(proof *SmtLibProof) (*merkletree.Proof, error) {
+	nodeAuxIndex, err := merkletree.NewHashFromBigInt(
+		proof.AuxIndex,
+	)
+	if err != nil {
+		return nil, err
+	}
+	nodeAuxValue, err := merkletree.NewHashFromBigInt(
+		proof.AuxValue,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	maxGasPricePerFee := big.NewInt(0).Add(baseFee, gasTip)
+	siblings := make([]*merkletree.Hash, 0, len(proof.Siblings))
+	for _, s := range proof.Siblings {
+		h, err := merkletree.NewHashFromBigInt(s)
+		if err != nil {
+			return nil, err
+		}
+		siblings = append(siblings, h)
+	}
 
-	tx := types.NewTx(&types.DynamicFeeTx{
-		ChainID:   cid,
-		Nonce:     nonce,
-		GasFeeCap: maxGasPricePerFee,
-		GasTipCap: gasTip,
-		Gas:       gasLimit,
-		To:        &toAddress,
-		Value:     value,
-		Data:      payload,
-	})
-
-	signedTx, _ := types.SignTx(tx, types.LatestSignerForChainID(cid), privateKey)
-
-	client.SendTransaction(context.Background(), signedTx)
-
-	return signedTx, nil
+	return merkletree.NewProofFromData(
+		proof.Existence,
+		siblings,
+		&merkletree.NodeAux{nodeAuxIndex, nodeAuxValue},
+	)
 }

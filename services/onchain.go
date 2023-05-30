@@ -7,8 +7,12 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/0xPolygonID/onchain-issuer-demo/common"
+	"github.com/0xPolygonID/onchain-issuer-demo/pkg/blockchain"
 	"github.com/0xPolygonID/onchain-issuer-demo/repository"
 	core "github.com/iden3/go-iden3-core"
+	coreV2 "github.com/iden3/go-iden3-core/v2"
+	"github.com/iden3/go-iden3-core/v2/w3c"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
 )
@@ -50,6 +54,7 @@ func (oc *OnChain) CreateClaimOnChain(
 		return "", err
 	}
 	mustPritnVC(w3cCred)
+
 	coreClaim, err := BuildCoreClaim(
 		schema, schemaBytes, w3cCred, credentialReq,
 		w3cCred.CredentialStatus.(verifiable.CredentialStatus).RevocationNonce,
@@ -58,13 +63,84 @@ func (oc *OnChain) CreateClaimOnChain(
 		return "", err
 	}
 	mustPrintCoreClain(coreClaim)
-	// TODO: write to smart contract
+
+	chid, err := extractIssuerChain(issuer)
+	if err != nil {
+		return "", err
+	}
+
+	rs, ok := common.ResolverSettings[chid]
+	if !ok {
+		return "", fmt.Errorf("resolver settings for chain %s not found", chid)
+	}
+	hi, err := coreClaim.HIndex()
+	if err != nil {
+		return "", err
+	}
+	hv, err := coreClaim.HValue()
+	if err != nil {
+		return "", err
+	}
+	mtpProof, err := blockchain.ProcessOnChainClaim(
+		rs.NetworkURL,
+		rs.ContractAddress,
+		rs.ContractOwner,
+		hi,
+		hv,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	mtpProof.IssuerData.ID = issuer
+	mtpProof.CoreClaim, _ = coreClaim.Hex()
+	w3cCred.Proof = verifiable.CredentialProofs{
+		&mtpProof,
+	}
+
 	id, err := oc.CredentialRepository.Create(ctx, w3cCred)
 	if err != nil {
 		return "", err
 	}
 
 	return id, nil
+}
+
+func extractIssuerChain(issuer string) (string, error) {
+	did, err := w3c.ParseDID(issuer)
+	if err != nil {
+		return "", err
+	}
+	id, err := coreV2.IDFromDID(*did)
+	if err != nil {
+		return "", err
+	}
+	bc, err := coreV2.BlockchainFromID(id)
+	if err != nil {
+		return "", err
+	}
+	network, err := coreV2.NetworkIDFromID(id)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s:%s", bc, network), nil
+}
+
+func (oc *OnChain) GetUsersVCs(
+	ctx context.Context,
+	issuer string,
+	subject string,
+	schemaType string,
+) ([]verifiable.W3CCredential, error) {
+	return oc.CredentialRepository.GetUserVCs(ctx, issuer, subject, schemaType)
+}
+
+func (oc *OnChain) GetUserVCByID(
+	ctx context.Context,
+	issuer string,
+	credentialID string,
+) (verifiable.W3CCredential, error) {
+	return oc.CredentialRepository.GetVCByID(ctx, issuer, credentialID)
 }
 
 func loadSchema(ctx context.Context, URL string) ([]byte, error) {

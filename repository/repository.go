@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/iden3/go-schema-processor/verifiable"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -58,7 +58,7 @@ func NewCredentialRepository(db *mongo.Database) (*CredentialRepository, error) 
 		{
 			Keys: bson.D{
 				{
-					Key:   "credentialSubject.id",
+					Key:   "credentialsubject.id",
 					Value: 1,
 				},
 			},
@@ -78,10 +78,70 @@ func (cs *CredentialRepository) Create(
 	ctx context.Context,
 	vc verifiable.W3CCredential,
 ) (string, error) {
-	res, err := cs.coll.InsertOne(ctx, vc)
+	model, err := NewCredentailModelFromW3C(vc)
 	if err != nil {
 		return "", err
 	}
-	id := res.InsertedID.(primitive.ObjectID)
-	return id.Hex(), nil
+	_, err = cs.coll.InsertOne(ctx, model)
+	if err != nil {
+		return "", err
+	}
+	return extractCredentialID(vc), nil
+}
+
+func (cs *CredentialRepository) GetUserVCs(
+	ctx context.Context,
+	issuer string,
+	user string,
+	schemaType string,
+) ([]verifiable.W3CCredential, error) {
+	filter := bson.M{"issuer": issuer}
+	if user != "" {
+		filter["credentialsubject.id"] = user
+	}
+	if schemaType != "" {
+		filter["credentialsubject.type"] = schemaType
+	}
+	cursor, err := cs.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var models []credentialModel
+	if err = cursor.All(ctx, &models); err != nil {
+		return nil, err
+	}
+
+	vcs := make([]verifiable.W3CCredential, len(models))
+	for i, model := range models {
+		vc, err := model.ToW3C()
+		if err != nil {
+			return nil, err
+		}
+		vcs[i] = vc
+	}
+
+	return vcs, nil
+}
+
+func (cs *CredentialRepository) GetVCByID(
+	ctx context.Context,
+	issuer string,
+	credentialID string,
+) (verifiable.W3CCredential, error) {
+	filter := bson.M{"issuer": issuer, "id": bson.M{"$regex": credentialID}}
+	res := cs.coll.FindOne(ctx, filter)
+	if res.Err() != nil {
+		return verifiable.W3CCredential{}, res.Err()
+	}
+	var model credentialModel
+	if err := res.Decode(&model); err != nil {
+		return verifiable.W3CCredential{}, err
+	}
+	return model.ToW3C()
+}
+
+func extractCredentialID(vc verifiable.W3CCredential) string {
+	parts := strings.Split(vc.ID, "/")
+	return parts[len(parts)-1]
 }

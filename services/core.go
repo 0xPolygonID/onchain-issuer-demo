@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	// neet to update go-schema-processor to core v2
 	core "github.com/iden3/go-iden3-core"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	proc "github.com/iden3/go-schema-processor/processor"
