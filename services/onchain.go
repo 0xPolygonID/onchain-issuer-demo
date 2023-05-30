@@ -11,8 +11,6 @@ import (
 	"github.com/0xPolygonID/onchain-issuer-demo/pkg/blockchain"
 	"github.com/0xPolygonID/onchain-issuer-demo/repository"
 	core "github.com/iden3/go-iden3-core"
-	coreV2 "github.com/iden3/go-iden3-core/v2"
-	"github.com/iden3/go-iden3-core/v2/w3c"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
 )
@@ -64,14 +62,14 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 	mustPrintCoreClain(coreClaim)
 
-	chid, err := extractIssuerChain(issuer)
+	contractAddress, err := buildContractIDFromDID(issuer)
 	if err != nil {
 		return "", err
 	}
 
-	rs, ok := common.ResolverSettings[chid]
+	rs, ok := common.ResolverSettings[contractAddress]
 	if !ok {
-		return "", fmt.Errorf("resolver settings for chain %s not found", chid)
+		return "", fmt.Errorf("resolver settings for chain %s not found", contractAddress)
 	}
 	hi, err := coreClaim.HIndex()
 	if err != nil {
@@ -83,7 +81,7 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 	mtpProof, err := blockchain.ProcessOnChainClaim(
 		rs.NetworkURL,
-		rs.ContractAddress,
+		contractAddress,
 		rs.ContractOwner,
 		hi,
 		hv,
@@ -104,26 +102,6 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 
 	return id, nil
-}
-
-func extractIssuerChain(issuer string) (string, error) {
-	did, err := w3c.ParseDID(issuer)
-	if err != nil {
-		return "", err
-	}
-	id, err := coreV2.IDFromDID(*did)
-	if err != nil {
-		return "", err
-	}
-	bc, err := coreV2.BlockchainFromID(id)
-	if err != nil {
-		return "", err
-	}
-	network, err := coreV2.NetworkIDFromID(id)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s:%s", bc, network), nil
 }
 
 func (oc *OnChain) GetUsersVCs(

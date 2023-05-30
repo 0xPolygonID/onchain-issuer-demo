@@ -99,9 +99,12 @@ func buildCredentialStatus(issuer string) (verifiable.CredentialStatus, error) {
 	if err != nil {
 		return verifiable.CredentialStatus{}, err
 	}
+	uintNonce := biNonce.Uint64()
 	return verifiable.CredentialStatus{
-		ID:              cid,
-		RevocationNonce: biNonce.Uint64(),
+		ID: fmt.Sprintf(
+			"%s/credentialStatus?revocationNonce=%d&contractAddress=%s", issuer, uintNonce, cid,
+		),
+		RevocationNonce: uintNonce,
 		Type:            verifiable.Iden3OnchainSparseMerkleTreeProof2023,
 	}, nil
 }
@@ -121,24 +124,9 @@ func buildContractIDFromDID(didStr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	chain, err := core.BlockchainFromID(id)
-	if err != nil {
-		return "", err
-	}
-	netID, err := core.NetworkIDFromID(id)
-	if err != nil {
-		return "", err
-	}
-	chainID, ok := chainIDs[fmt.Sprintf("%s:%s", chain, netID)]
-	if !ok {
-		return "", fmt.Errorf("unknown network %s", netID)
-	}
 	ca, err := core.EthAddressFromID(id)
 	if err != nil {
 		return "", err
 	}
-	contractAddress := ethcomm.BytesToAddress(ca[:])
-	return fmt.Sprintf("eip155:%d:%s",
-			chainID, contractAddress.String()),
-		nil
+	return ethcomm.BytesToAddress(ca[:]).Hex(), nil
 }

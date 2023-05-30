@@ -15,17 +15,13 @@ const (
 
 // ResolverSettings represent settings for resolver.
 type resolverSettings map[string]struct {
-	ContractAddress string `yaml:"contractAddress"`
-	NetworkURL      string `yaml:"networkURL"`
-	ContractOwner   string `yaml:"contractOwner"`
-	ContractState   string `yaml:"contractState"`
+	NetworkURL    string `yaml:"networkURL"`
+	ContractOwner string `yaml:"contractOwner"`
+	ContractState string `yaml:"contractState"`
 }
 
 func (r resolverSettings) Verify() error {
 	for _, settings := range r {
-		if settings.ContractAddress == "" {
-			return errors.New("contract address is not set")
-		}
 		if settings.NetworkURL == "" {
 			return errors.New("network url is not set")
 		}
