@@ -7,7 +7,7 @@ services:
     volumes:
       - .mongodata/db:/data/db
   onchaindemo:
-    image: ghcr.io/0xpolygonid/reputation-backend:main
+    image: ghcr.io/0xpolygonid/onchain-issuer-demo:master
     #    image: onchaindemo:local
     ports:
       - "3333"
