@@ -1,0 +1,163 @@
+{
+	"info": {
+		"_postman_id": "347e0d0b-121d-40c6-ad05-8cf4e1e1fd73",
+		"name": "onchain-issuer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create onchain identity",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const respBody = pm.response.json();",
+							"pm.environment.set(\"credential_id\", respBody.id);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"credentialSchema\": \"https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v4.json\",\n    \"type\": \"KYCAgeCredential\",\n    \"CredentialSubject\": {\n        \"birthday\": 19960424,\n        \"documentType\": 463019,\n        \"id\": \"{{user_did}}\"\n    },\n    \"expiration\": 1893456000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{onchain_issuer_demo}}/api/v1/identities/{{onchain_issuer}}/claims",
+					"protocol": "https",
+					"host": [
+						"{{onchain_issuer_demo}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"identities",
+						"{{onchain_issuer}}",
+						"claims"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get list of user's VC",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"credentialSchema\": \"https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v4.json\",\n    \"type\": \"KYCAgeCredential\",\n    \"CredentialSubject\": {\n        \"birthday\": 19960424,\n        \"documentType\": 463019,\n        \"id\": \"{{user_did}}\"\n    },\n    \"expiration\": 1893456000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{onchain_issuer_demo}}/api/v1/identities/{{onchain_issuer}}/claims",
+					"protocol": "https",
+					"host": [
+						"{{onchain_issuer_demo}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"identities",
+						"{{onchain_issuer}}",
+						"claims"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get one user's VC by ID",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"credentialSchema\": \"https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v4.json\",\n    \"type\": \"KYCAgeCredential\",\n    \"CredentialSubject\": {\n        \"birthday\": 19960424,\n        \"documentType\": 463019,\n        \"id\": \"{{user_did}}\"\n    },\n    \"expiration\": 1893456000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{onchain_issuer_demo}}/api/v1/identities/{{onchain_issuer}}/claims/{{credential_id}}",
+					"protocol": "https",
+					"host": [
+						"{{onchain_issuer_demo}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"identities",
+						"{{onchain_issuer}}",
+						"claims",
+						"{{credential_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "onchain_issuer",
+			"value": "did:polygonid:polygon:mumbai:2qCU58EJgrEMWhziKqC3qNXJkZPY8XCxDSBM4mqPkM"
+		},
+		{
+			"key": "user_did",
+			"value": "did:polygonid:polygon:mumbai:2qFp9QBPQ9QuTxTL81iQSGMEJDNpHBo7Hm8GnxMaeQ",
+			"type": "default"
+		},
+		{
+			"key": "credential_id",
+			"value": "1",
+			"type": "default"
+		},
+		{
+			"key": "onchain_issuer_demo",
+			"value": "onchainissuer.polygonid.me",
+			"type": "default"
+		}
+	]
+}
