@@ -10,13 +10,12 @@ import (
 
 const (
 	defaultPathToResolverSettings      = "./resolvers.settings.yaml"
+	defaultPathToOnchainIssuerSettings = "./onchain-issuer.settings.yaml"
 	defaultPathToAuthV2VerificationKey = "./keys/authV2.json"
 )
 
-// ResolverSettings represent settings for resolver.
 type resolverSettings map[string]struct {
 	NetworkURL    string `yaml:"networkURL"`
-	ContractOwner string `yaml:"contractOwner"`
 	ContractState string `yaml:"contractState"`
 }
 
@@ -25,11 +24,26 @@ func (r resolverSettings) Verify() error {
 		if settings.NetworkURL == "" {
 			return errors.New("network url is not set")
 		}
-		if settings.ContractOwner == "" {
-			return errors.New("contract owner is not set")
-		}
 		if settings.ContractState == "" {
 			return errors.New("contract state is not set")
+		}
+	}
+	return nil
+}
+
+// onchainIssuerSettings represent settings for resolver.
+type onchainIssuerSettings map[string]struct {
+	NetworkURL    string `yaml:"networkURL"`
+	ContractOwner string `yaml:"contractOwner"`
+}
+
+func (oi onchainIssuerSettings) Verify() error {
+	for _, settings := range oi {
+		if settings.NetworkURL == "" {
+			return errors.New("network url is not set")
+		}
+		if settings.ContractOwner == "" {
+			return errors.New("contract owner is not set")
 		}
 	}
 	return nil
@@ -40,6 +54,7 @@ var (
 	InternalServerPort        string
 	MongoDBHost               string
 	AuthV2VerificationKeyPath string
+	OnChainIssuerSettings     onchainIssuerSettings
 	ResolverSettings          resolverSettings
 )
 
@@ -61,6 +76,14 @@ func init() {
 		AuthV2VerificationKeyPath = defaultPathToAuthV2VerificationKey
 	}
 
+	onchainIssuerSettingsConfigPath := os.Getenv("ONCHAIN_ISSUER_SETTINGS_CONFIG_PATH")
+	if onchainIssuerSettingsConfigPath == "" {
+		onchainIssuerSettingsConfigPath = defaultPathToOnchainIssuerSettings
+	}
+	if err := readOncnainIssuerConfig(onchainIssuerSettingsConfigPath); err != nil {
+		log.Fatalf("failed read network config by path %s: %v", onchainIssuerSettingsConfigPath, err)
+	}
+
 	resolverSettingsConfigPath := os.Getenv("RESOLVER_SETTINGS_CONFIG_PATH")
 	if resolverSettingsConfigPath == "" {
 		resolverSettingsConfigPath = defaultPathToResolverSettings
@@ -68,6 +91,22 @@ func init() {
 	if err := readResolverConfig(resolverSettingsConfigPath); err != nil {
 		log.Fatalf("failed read network config by path %s: %v", resolverSettingsConfigPath, err)
 	}
+}
+
+func readOncnainIssuerConfig(path string) error {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var cfgs onchainIssuerSettings
+	if err = yaml.Unmarshal(content, &cfgs); err != nil {
+		return err
+	}
+	if err = cfgs.Verify(); err != nil {
+		return err
+	}
+	OnChainIssuerSettings = cfgs
+	return nil
 }
 
 func readResolverConfig(path string) error {

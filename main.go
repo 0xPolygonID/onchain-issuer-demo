@@ -90,17 +90,17 @@ func initRepository() (*repository.CredentialRepository, error) {
 
 func initPakcer() (*iden3comm.PackageManager, error) {
 	stateContracts := map[string]*abi.State{}
-	for onchainID, onchainSettings := range common.ResolverSettings {
-		client, err := ethclient.Dial(onchainSettings.NetworkURL)
+	for chainPrefix, resolverSetting := range common.ResolverSettings {
+		client, err := ethclient.Dial(resolverSetting.NetworkURL)
 		if err != nil {
 			return nil, err
 		}
-		add := ethcomm.HexToAddress(common.ResolverSettings[onchainID].ContractState)
+		add := ethcomm.HexToAddress(resolverSetting.ContractState)
 		stateContract, err := abi.NewState(add, client)
 		if err != nil {
 			return nil, err
 		}
-		stateContracts[onchainID] = stateContract
+		stateContracts[chainPrefix] = stateContract
 	}
 
 	authV2VerificationKey, err := os.ReadFile(common.AuthV2VerificationKeyPath)

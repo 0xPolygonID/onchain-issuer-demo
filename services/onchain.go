@@ -67,7 +67,7 @@ func (oc *OnChain) CreateClaimOnChain(
 		return "", err
 	}
 
-	rs, ok := common.ResolverSettings[contractAddress]
+	rs, ok := common.OnChainIssuerSettings[contractAddress]
 	if !ok {
 		return "", fmt.Errorf("resolver settings for chain %s not found", contractAddress)
 	}

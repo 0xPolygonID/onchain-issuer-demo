@@ -51,7 +51,7 @@ func authV2CircuitStateVerification(
 	}
 	contract, ok := contracts[fmt.Sprintf("%s:%s", did.Blockchain, did.NetworkID)]
 	if !ok {
-		return errors.Errorf("not supported blockchain %s", did.Blockchain)
+		return errors.Errorf("not supported blockchain prefix %s:%s", did.Blockchain, did.NetworkID)
 	}
 
 	globalState := authPubSignals.GISTRoot.BigInt()
