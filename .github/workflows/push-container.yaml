@@ -22,13 +22,13 @@ jobs:
         run: |
           cd onchain-issuer-demo
           echo -e "polygon:mumbai" > resolvers.settings.yaml
-          echo -e "  contractState: ${{ env.POLYGON_MUMBAI_CONTRACT_STATE_ADDRESS }}" >> resolvers.settings.yaml
+          echo -e "  contractState: ${{ vars.POLYGON_MUMBAI_CONTRACT_STATE_ADDRESS }}" >> resolvers.settings.yaml
           echo -e "  networkURL: ${{ secrets.POLYGON_MUMBAI_NODE_URL }}" >> resolvers.settings.yaml
 
       - name: Build file with supported onchain issuers.
         run: |
           cd onchain-issuer-demo
-          echo -e "${{ env.POLYGON_MUMBAI_ONCHAIN_ISSUER_CONTRACT }}" > onchain-issuer.settings.yaml
+          echo -e "${{ vars.POLYGON_MUMBAI_ONCHAIN_ISSUER_CONTRACT }}" > onchain-issuer.settings.yaml
           echo -e "  networkURL: ${{ secrets.POLYGON_MUMBAI_NODE_URL }}" >> onchain-issuer.settings.yaml
           echo -e "  contractOwner: ${{ secrets.POLYGON_MUMBAI_ISSUER_OWNER }}" >> onchain-issuer.settings.yaml
 
