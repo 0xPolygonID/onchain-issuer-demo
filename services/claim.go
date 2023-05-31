@@ -23,13 +23,6 @@ var (
 	defaultW3CCredentialType = [1]string{
 		verifiable.TypeW3CVerifiableCredential,
 	}
-
-	chainIDs = map[string]int{
-		"eth:main":       1,
-		"eth:goerli":     5,
-		"polygon:mumbai": 80001,
-		"polygon:main":   137,
-	}
 )
 
 func CreateW3CCredential(
