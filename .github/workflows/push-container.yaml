@@ -28,7 +28,7 @@ jobs:
       - name: Build file with supported onchain issuers.
         run: |
           cd onchain-issuer-demo
-          echo -e "${{ vars.POLYGON_MUMBAI_ONCHAIN_ISSUER_CONTRACT }}" > onchain-issuer.settings.yaml
+          echo -e "\"${{ vars.POLYGON_MUMBAI_ONCHAIN_ISSUER_CONTRACT }}\"" > onchain-issuer.settings.yaml
           echo -e "  networkURL: ${{ secrets.POLYGON_MUMBAI_NODE_URL }}" >> onchain-issuer.settings.yaml
           echo -e "  contractOwner: ${{ secrets.POLYGON_MUMBAI_ISSUER_OWNER }}" >> onchain-issuer.settings.yaml
 
