@@ -1,0 +1,16 @@
+version: '3'
+services:
+  onchainmongo:
+    image: mongo:7.0.0-rc2-jammy
+    ports:
+     - "27017"
+    volumes:
+      - .mongodata/db:/data/db
+  onchaindemo:
+    image: ghcr.io/0xpolygonid/onchain-issuer-demo:master
+    #    image: onchaindemo:local
+    ports:
+      - "3333"
+    env_file:
+      - .env
+
