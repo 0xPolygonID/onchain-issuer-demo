@@ -35,6 +35,7 @@ func (r resolverSettings) Verify() error {
 type onchainIssuerSettings map[string]struct {
 	NetworkURL    string `yaml:"networkURL"`
 	ContractOwner string `yaml:"contractOwner"`
+	ChainID       int    `yaml:"chainID"`
 }
 
 func (oi onchainIssuerSettings) Verify() error {
@@ -44,6 +45,9 @@ func (oi onchainIssuerSettings) Verify() error {
 		}
 		if settings.ContractOwner == "" {
 			return errors.New("contract owner is not set")
+		}
+		if settings.ChainID == 0 {
+			return errors.New("chain id is not set")
 		}
 	}
 	return nil

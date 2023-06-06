@@ -46,8 +46,18 @@ func (oc *OnChain) CreateClaimOnChain(
 		return "", err
 	}
 
+	contractAddress, err := buildContractIDFromDID(issuer)
+	if err != nil {
+		return "", err
+	}
+
+	rs, ok := common.OnChainIssuerSettings[contractAddress]
+	if !ok {
+		return "", fmt.Errorf("resolver settings for chain %s not found", contractAddress)
+	}
+
 	w3cCred, err := CreateW3CCredential(
-		schema, issuer, credentialReq)
+		schema, issuer, credentialReq, rs.ChainID)
 	if err != nil {
 		return "", err
 	}
@@ -62,15 +72,6 @@ func (oc *OnChain) CreateClaimOnChain(
 	}
 	mustPrintCoreClain(coreClaim)
 
-	contractAddress, err := buildContractIDFromDID(issuer)
-	if err != nil {
-		return "", err
-	}
-
-	rs, ok := common.OnChainIssuerSettings[contractAddress]
-	if !ok {
-		return "", fmt.Errorf("resolver settings for chain %s not found", contractAddress)
-	}
 	hi, err := coreClaim.HIndex()
 	if err != nil {
 		return "", err

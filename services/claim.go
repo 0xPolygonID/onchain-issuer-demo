@@ -29,6 +29,7 @@ func CreateW3CCredential(
 	schema jsonSuite.Schema,
 	issuer string,
 	req CredentialRequest,
+	chainID int,
 ) (verifiable.W3CCredential, error) {
 	expirationTime := time.Unix(req.Expiration, 0)
 	issuanceDate := time.Now()
@@ -45,7 +46,7 @@ func CreateW3CCredential(
 		return verifiable.W3CCredential{}, err
 	}
 
-	cs, err := buildCredentialStatus(issuer)
+	cs, err := buildCredentialStatus(issuer, chainID)
 	if err != nil {
 		return verifiable.W3CCredential{}, err
 	}
@@ -83,7 +84,7 @@ func fillCredentialSubject(credentialSubject map[string]interface{}) error {
 	return nil
 }
 
-func buildCredentialStatus(issuer string) (verifiable.CredentialStatus, error) {
+func buildCredentialStatus(issuer string, chainID int) (verifiable.CredentialStatus, error) {
 	cid, err := buildContractIDFromDID(issuer)
 	if err != nil {
 		return verifiable.CredentialStatus{}, err
@@ -95,7 +96,7 @@ func buildCredentialStatus(issuer string) (verifiable.CredentialStatus, error) {
 	uintNonce := biNonce.Uint64()
 	return verifiable.CredentialStatus{
 		ID: fmt.Sprintf(
-			"%s/credentialStatus?revocationNonce=%d&contractAddress=%s", issuer, uintNonce, cid,
+			"%s/credentialStatus?revocationNonce=%d&contractAddress=%d:%s", issuer, uintNonce, chainID, cid,
 		),
 		RevocationNonce: uintNonce,
 		Type:            verifiable.Iden3OnchainSparseMerkleTreeProof2023,
