@@ -31,6 +31,7 @@ jobs:
           echo -e "\"${{ vars.POLYGON_MUMBAI_ONCHAIN_ISSUER_CONTRACT }}\":" > onchain-issuer.settings.yaml
           echo -e "  networkURL: ${{ secrets.POLYGON_MUMBAI_NODE_URL }}" >> onchain-issuer.settings.yaml
           echo -e "  contractOwner: ${{ secrets.POLYGON_MUMBAI_ISSUER_OWNER }}" >> onchain-issuer.settings.yaml
+          echo -e "  chainID: 80001" >> onchain-issuer.settings.yaml
 
       - name: Set up Docker Buildx
         id: buildx
