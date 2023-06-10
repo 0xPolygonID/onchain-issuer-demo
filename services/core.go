@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	// neet to update go-schema-processor to core v2
 	core "github.com/iden3/go-iden3-core"
@@ -24,18 +25,23 @@ func BuildCoreClaim(
 		proc.WithParser(jsonSuite.Parser{}),
 	)
 	opts := proc.CoreClaimOptions{
-		RevNonce: revocationNonce,
-		Version:  version,
+		RevNonce:        revocationNonce,
+		Version:         version,
+		SubjectPosition: credentialReq.SubjectPosition,
 		MerklizedRootPosition: defineMerklizedRootPosition(
 			schemaSuite.Metadata,
 			credentialReq.MerklizedRootPosition,
 		),
 		Updatable: false,
 	}
+
+	credentialType := fmt.Sprintf("%s#%s", schemaSuite.Metadata.Uris["jsonLdContext"], credentialReq.Type)
+	fmt.Println("credentialType str", credentialType)
+
 	coreClaim, err := jsonProcessor.ParseClaim(
 		context.Background(),
 		vc,
-		vc.CredentialSubject["type"].(string),
+		credentialType,
 		schemaBytes,
 		&opts,
 	)

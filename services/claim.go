@@ -2,6 +2,7 @@ package services
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -18,7 +19,7 @@ import (
 var (
 	defaultW3Cctx = [2]string{
 		verifiable.JSONLDSchemaW3CCredential2018,
-		"https://raw.githubusercontent.com/iden3/claim-schema-vocab/f045ad82fef841dd4ce75633d6e3440ee1bd4dc7/schemas/json-ld/iden3credential-v2.json-ld",
+		"https://raw.githubusercontent.com/iden3/claim-schema-vocab/cbade52faccea8c386bab0129c0ffffa64393849/core/jsonld/iden3proofs.jsonld",
 	}
 	defaultW3CCredentialType = [1]string{
 		verifiable.TypeW3CVerifiableCredential,
@@ -89,11 +90,10 @@ func buildCredentialStatus(issuer string, chainID int) (verifiable.CredentialSta
 	if err != nil {
 		return verifiable.CredentialStatus{}, err
 	}
-	biNonce, err := rand.Prime(rand.Reader, 16)
+	uintNonce, err := RandInt64()
 	if err != nil {
 		return verifiable.CredentialStatus{}, err
 	}
-	uintNonce := biNonce.Uint64()
 	return verifiable.CredentialStatus{
 		ID: fmt.Sprintf(
 			"%s/credentialStatus?revocationNonce=%d&contractAddress=%d:%s", issuer, uintNonce, chainID, cid,
@@ -101,6 +101,14 @@ func buildCredentialStatus(issuer string, chainID int) (verifiable.CredentialSta
 		RevocationNonce: uintNonce,
 		Type:            verifiable.Iden3OnchainSparseMerkleTreeProof2023,
 	}, nil
+}
+
+func RandInt64() (uint64, error) {
+	var buf [8]byte
+	// TODO: this was changed because revocation nonce is cut in dart / js if number is too big
+	_, err := rand.Read(buf[:4]) // was rand.Read(buf[:])
+
+	return binary.LittleEndian.Uint64(buf[:]), err
 }
 
 func newCredentialID(issuer string) string {

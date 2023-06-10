@@ -129,10 +129,22 @@ func buildMTPProof(
 		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
 
-	rootOfRoots := roots.RevocationsRoot.Text(16)
-	claimTreeRoot := roots.ClaimsRoot.Text(16)
-	revocationTreeRoot := roots.RevocationsRoot.Text(16)
-	state := bigState.Text(16)
+	state, err := merkletree.NewHashFromBigInt(bigState)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+	rootOfRoots, err := merkletree.NewHashFromBigInt(roots.RootsRoot)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+	claimTreeRoot, err := merkletree.NewHashFromBigInt(roots.ClaimsRoot)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
+	revocationTreeRoot, err := merkletree.NewHashFromBigInt(roots.RevocationsRoot)
+	if err != nil {
+		return verifiable.Iden3SparseMerkleTreeProof{}, err
+	}
 
 	mtp, err := convertChainProofToMerkleProof(&proof)
 	if err != nil {
@@ -142,11 +154,12 @@ func buildMTPProof(
 	return verifiable.Iden3SparseMerkleTreeProof{
 		Type: verifiable.Iden3SparseMerkleTreeProofType,
 		IssuerData: verifiable.IssuerData{
+			// TODO(illia-korotia): empty roots should be nil?
 			State: verifiable.State{
-				RootOfRoots:        &rootOfRoots,
-				ClaimsTreeRoot:     &claimTreeRoot,
-				RevocationTreeRoot: &revocationTreeRoot,
-				Value:              &state,
+				RootOfRoots:        strpoint(rootOfRoots.Hex()),
+				ClaimsTreeRoot:     strpoint(claimTreeRoot.Hex()),
+				RevocationTreeRoot: strpoint(revocationTreeRoot.Hex()),
+				Value:              strpoint(state.Hex()),
 			},
 		},
 		MTP: mtp,
@@ -181,4 +194,8 @@ func convertChainProofToMerkleProof(proof *SmtLibProof) (*merkletree.Proof, erro
 		siblings,
 		&merkletree.NodeAux{nodeAuxIndex, nodeAuxValue},
 	)
+}
+
+func strpoint(s string) *string {
+	return &s
 }
