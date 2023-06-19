@@ -17,8 +17,8 @@ type credentialModel struct {
 	ID                string
 	Context           []string
 	Type              []string
-	Expiration        *time.Time
-	IssuanceDate      *time.Time
+	Expiration        string
+	IssuanceDate      string
 	CredentialSubject map[string]interface{}
 	CredentialStatus  credentialStatusModel
 	Issuer            string
@@ -45,8 +45,8 @@ func NewCredentailModelFromW3C(vc verifiable.W3CCredential) (credentialModel, er
 		ID:                vc.ID,
 		Context:           vc.Context,
 		Type:              vc.Type,
-		Expiration:        vc.Expiration,
-		IssuanceDate:      vc.IssuanceDate,
+		Expiration:        vc.Expiration.Format(time.RFC3339Nano),
+		IssuanceDate:      vc.IssuanceDate.Format(time.RFC3339Nano),
 		CredentialSubject: vc.CredentialSubject,
 		CredentialStatus: credentialStatusModel{
 			ID:              cs.ID,
@@ -75,12 +75,21 @@ func (cm *credentialModel) ToW3C() (verifiable.W3CCredential, error) {
 		proofs = append(proofs, &proof)
 	}
 
+	expTime, err := time.Parse(time.RFC3339Nano, cm.Expiration)
+	if err != nil {
+		return verifiable.W3CCredential{}, err
+	}
+	issuanceTime, err := time.Parse(time.RFC3339Nano, cm.IssuanceDate)
+	if err != nil {
+		return verifiable.W3CCredential{}, err
+	}
+
 	return verifiable.W3CCredential{
 		ID:                cm.ID,
 		Context:           cm.Context,
 		Type:              cm.Type,
-		Expiration:        cm.Expiration,
-		IssuanceDate:      cm.IssuanceDate,
+		Expiration:        &expTime,
+		IssuanceDate:      &issuanceTime,
 		CredentialSubject: cm.CredentialSubject,
 		CredentialStatus: verifiable.CredentialStatus{
 			ID:              cm.CredentialStatus.ID,

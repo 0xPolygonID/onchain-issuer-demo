@@ -17,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/iden3/contracts-abi/state/go/abi"
 	"github.com/iden3/go-jwz"
-	"github.com/iden3/go-schema-processor/verifiable"
 	"github.com/iden3/iden3comm"
 	"github.com/iden3/iden3comm/packers"
 	"github.com/pkg/errors"
@@ -68,9 +67,7 @@ func main() {
 
 func initRepository() (*repository.CredentialRepository, error) {
 	tM := reflect.TypeOf(bson.M{})
-	reg := bson.NewRegistryBuilder().
-		RegisterTypeDecoder(reflect.TypeOf(verifiable.CredentialProofs{}), &repository.CredentialProofsCodec{}).
-		RegisterTypeMapEntry(bsontype.EmbeddedDocument, tM).Build()
+	reg := bson.NewRegistryBuilder().RegisterTypeMapEntry(bsontype.EmbeddedDocument, tM).Build()
 
 	fmt.Println("Connecting to MongoDB: ", common.MongoDBHost)
 	opts := options.Client().ApplyURI(common.MongoDBHost).SetRegistry(reg)
