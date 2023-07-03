@@ -47,32 +47,25 @@ func ProcessOnChainClaim(
 	tx, err := sendTx(
 		onChainIssuer,
 		pk,
-		hashIndex,
-		hashValue,
 		chid,
+		func(opts *bind.TransactOpts) (*types.Transaction, error) {
+			return onChainIssuer.AddClaimHashAndTransit(
+				opts,
+				hashIndex,
+				hashValue,
+			)
+		},
 	)
 	if err != nil {
 		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
 
-	r, err := bind.WaitMined(context.Background(), client, tx)
-	if err != nil {
+	if err = waitConfirmation(
+		client,
+		tx,
+		blockConfirmations,
+	); err != nil {
 		return verifiable.Iden3SparseMerkleTreeProof{}, err
-	}
-
-	tick := time.NewTicker(5 * time.Second)
-	defer tick.Stop()
-
-	for {
-		<-tick.C
-		header, err := client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			return verifiable.Iden3SparseMerkleTreeProof{}, err
-		}
-		passedBlocks := big.NewInt(0).Sub(header.Number, r.BlockNumber)
-		if big.NewInt(blockConfirmations).Cmp(passedBlocks) == -1 {
-			break
-		}
 	}
 
 	mtpProof, err := buildMTPProof(onChainIssuer, hashIndex)
@@ -83,12 +76,85 @@ func ProcessOnChainClaim(
 	return mtpProof, nil
 }
 
+func RevokeOnChainClaim(
+	rpcUrl string,
+	contractAddress string,
+	pk string,
+	nonce uint64,
+) error {
+	client, err := ethclient.Dial(rpcUrl)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	chid, err := client.ChainID(context.Background())
+	if err != nil {
+		return err
+	}
+
+	onChainIssuer, err := NewIdentity(
+		common.HexToAddress(contractAddress),
+		client,
+	)
+	if err != nil {
+		return err
+	}
+
+	tx, err := sendTx(
+		onChainIssuer,
+		pk,
+		chid,
+		func(opts *bind.TransactOpts) (*types.Transaction, error) {
+			return onChainIssuer.RevokeClaimAndTransit(
+				opts,
+				nonce,
+			)
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return waitConfirmation(
+		client,
+		tx,
+		blockConfirmations,
+	)
+}
+
+func IsRevockedClaim(
+	rpcUrl string,
+	contractAddress string,
+	nonce uint64,
+) (bool, error) {
+	client, err := ethclient.Dial(rpcUrl)
+	if err != nil {
+		return false, err
+	}
+	defer client.Close()
+
+	onChainIssuer, err := NewIdentity(
+		common.HexToAddress(contractAddress),
+		client,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	revocationProof, err := onChainIssuer.GetRevocationProof(&bind.CallOpts{}, nonce)
+	if err != nil {
+		return false, err
+	}
+
+	return revocationProof.Existence, nil
+}
+
 func sendTx(
 	onChainIssuer *Identity,
 	pk string,
-	hashIndex *big.Int,
-	hashValue *big.Int,
 	chid *big.Int,
+	call func(*bind.TransactOpts) (*types.Transaction, error),
 ) (*types.Transaction, error) {
 	privateKey, err := crypto.HexToECDSA(pk)
 	if err != nil {
@@ -102,14 +168,38 @@ func sendTx(
 	if err != nil {
 		return nil, err
 	}
-	tx, err := onChainIssuer.AddClaimHashAndTransit(
-		opts, hashIndex, hashValue,
-	)
+	tx, err := call(opts)
 	if err != nil {
 		return nil, err
 	}
 
 	return tx, nil
+}
+
+func waitConfirmation(
+	client *ethclient.Client,
+	tx *types.Transaction,
+	blockConfirmations int64,
+) error {
+	r, err := bind.WaitMined(context.Background(), client, tx)
+	if err != nil {
+		return err
+	}
+
+	tick := time.NewTicker(5 * time.Second)
+	defer tick.Stop()
+
+	for {
+		<-tick.C
+		header, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			return err
+		}
+		passedBlocks := big.NewInt(0).Sub(header.Number, r.BlockNumber)
+		if big.NewInt(blockConfirmations).Cmp(passedBlocks) == -1 {
+			return nil
+		}
+	}
 }
 
 func buildMTPProof(

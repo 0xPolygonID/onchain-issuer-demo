@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/0xPolygonID/onchain-issuer-demo/services"
 	"github.com/go-chi/chi/v5"
@@ -32,6 +34,42 @@ func (h *Handlers) CreateClaim(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"id": recordID})
+}
+
+func (h *Handlers) IsRevocedClaim(w http.ResponseWriter, r *http.Request) {
+	issuer := chi.URLParam(r, "identifier")
+	nonce := chi.URLParam(r, "nonce")
+	n, err := strconv.ParseInt(nonce, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	isRevoked, err := h.CredentialService.IsRevokedVC(r.Context(), issuer, uint64(n))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"mtp":{"existence": %t}}`, isRevoked)
+}
+
+func (h *Handlers) RevoceClaim(w http.ResponseWriter, r *http.Request) {
+	issuer := chi.URLParam(r, "identifier")
+	nonce := chi.URLParam(r, "nonce")
+	n, err := strconv.ParseInt(nonce, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.CredentialService.RevokeVC(r.Context(), issuer, uint64(n)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handlers) GetUserVCs(w http.ResponseWriter, r *http.Request) {
