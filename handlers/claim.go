@@ -55,7 +55,7 @@ func (h *Handlers) IsRevocedClaim(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `{"mtp":{"existence": %t}}`, isRevoked)
 }
 
-func (h *Handlers) RevoceClaim(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) RevokeClaim(w http.ResponseWriter, r *http.Request) {
 	issuer := chi.URLParam(r, "identifier")
 	nonce := chi.URLParam(r, "nonce")
 	n, err := strconv.ParseInt(nonce, 10, 64)
