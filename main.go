@@ -58,6 +58,8 @@ func main() {
 			r.Post("/identities/{identifier}/claims", h.CreateClaim)
 			r.Get("/identities/{identifier}/claims", h.GetUserVCs)
 			r.Get("/identities/{identifier}/claims/{claimId}", h.GetUserVCByID)
+			r.Get("/identities/{identifier}/claims/revocation/status/{nonce}", h.IsRevocedClaim)
+			r.Post("/identities/{identifier}/claims/revoke/{nonce}", h.RevokeClaim)
 			r.Post("/agent", h.Agent)
 		})
 	})

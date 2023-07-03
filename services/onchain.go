@@ -122,6 +122,51 @@ func (oc *OnChain) GetUserVCByID(
 	return oc.CredentialRepository.GetVCByID(ctx, issuer, credentialID)
 }
 
+func (oc *OnChain) IsRevokedVC(
+	ctx context.Context,
+	issuer string,
+	nonce uint64,
+) (bool, error) {
+	contractAddress, err := buildContractIDFromDID(issuer)
+	if err != nil {
+		return false, err
+	}
+
+	rs, ok := common.OnChainIssuerSettings[contractAddress]
+	if !ok {
+		return false, fmt.Errorf("resolver settings for chain %s not found", contractAddress)
+	}
+
+	return blockchain.IsRevockedClaim(
+		rs.NetworkURL,
+		contractAddress,
+		nonce,
+	)
+}
+
+func (oc *OnChain) RevokeVC(
+	ctx context.Context,
+	issuer string,
+	nonce uint64,
+) error {
+	contractAddress, err := buildContractIDFromDID(issuer)
+	if err != nil {
+		return err
+	}
+
+	rs, ok := common.OnChainIssuerSettings[contractAddress]
+	if !ok {
+		return fmt.Errorf("resolver settings for chain %s not found", contractAddress)
+	}
+
+	return blockchain.RevokeOnChainClaim(
+		rs.NetworkURL,
+		contractAddress,
+		rs.ContractOwner,
+		nonce,
+	)
+}
+
 func loadSchema(ctx context.Context, URL string) ([]byte, error) {
 	resp, err := http.DefaultClient.Get(URL)
 	if err != nil {
