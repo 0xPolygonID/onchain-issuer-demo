@@ -36,7 +36,7 @@ func (h *Handlers) CreateClaim(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"id": recordID})
 }
 
-func (h *Handlers) IsRevocedClaim(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) IsRevokedClaim(w http.ResponseWriter, r *http.Request) {
 	issuer := chi.URLParam(r, "identifier")
 	nonce := chi.URLParam(r, "nonce")
 	n, err := strconv.ParseInt(nonce, 10, 64)
