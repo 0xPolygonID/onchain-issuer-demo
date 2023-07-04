@@ -137,7 +137,7 @@ func (oc *OnChain) IsRevokedVC(
 		return false, fmt.Errorf("resolver settings for chain %s not found", contractAddress)
 	}
 
-	return blockchain.IsRevockedClaim(
+	return blockchain.IsRevokedClaim(
 		rs.NetworkURL,
 		contractAddress,
 		nonce,

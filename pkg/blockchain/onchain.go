@@ -123,7 +123,7 @@ func RevokeOnChainClaim(
 	)
 }
 
-func IsRevockedClaim(
+func IsRevokedClaim(
 	rpcUrl string,
 	contractAddress string,
 	nonce uint64,
