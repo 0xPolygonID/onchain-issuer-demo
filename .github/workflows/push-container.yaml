@@ -24,6 +24,9 @@ jobs:
           echo -e "polygon:mumbai:" > resolvers.settings.yaml
           echo -e "  contractState: ${{ vars.POLYGON_MUMBAI_CONTRACT_STATE_ADDRESS }}" >> resolvers.settings.yaml
           echo -e "  networkURL: ${{ secrets.POLYGON_MUMBAI_NODE_URL }}" >> resolvers.settings.yaml
+          echo -e "polygon:main:" > resolvers.settings.yaml
+          echo -e "  contractState: ${{ vars.POLYGON_MAIN_CONTRACT_STATE_ADDRESS }}" >> resolvers.settings.yaml
+          echo -e "  networkURL: ${{ secrets.POLYGON_MAIN_NODE_URL }}" >> resolvers.settings.yaml
 
       - name: Build file with supported onchain issuers.
         run: |
