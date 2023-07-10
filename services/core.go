@@ -2,6 +2,9 @@ package services
 
 import (
 	"context"
+	"errors"
+	"io"
+	"net/http"
 
 	// neet to update go-schema-processor to core v2
 	core "github.com/iden3/go-iden3-core"
@@ -11,6 +14,8 @@ import (
 	jsonproc "github.com/iden3/go-schema-processor/processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
 )
+
+var ErrJSONLDURLNotFound = errors.New("jsonLdContext not found in schema metadata")
 
 func BuildCoreClaim(
 	schemaSuite jsonSuite.Schema,
@@ -35,7 +40,21 @@ func BuildCoreClaim(
 		Updatable: false,
 	}
 
-	schemaID, err := merklize.TypeIDFromContext(schemaBytes, credentialReq.Type)
+	jsonLDURL := schemaSuite.Metadata.Uris["jsonLdContext"]
+	if jsonLDURL == "" {
+		return nil, ErrJSONLDURLNotFound
+	}
+	resp, err := http.DefaultClient.Get(jsonLDURL.(string))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	jsonLDBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	schemaID, err := merklize.TypeIDFromContext(jsonLDBytes, credentialReq.Type)
 	if err != nil {
 		return nil, err
 	}
