@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	// neet to update go-schema-processor to core v2
 	core "github.com/iden3/go-iden3-core"
 	jsonSuite "github.com/iden3/go-schema-processor/json"
+	"github.com/iden3/go-schema-processor/merklize"
 	proc "github.com/iden3/go-schema-processor/processor"
 	jsonproc "github.com/iden3/go-schema-processor/processor/json"
 	"github.com/iden3/go-schema-processor/verifiable"
@@ -35,13 +35,15 @@ func BuildCoreClaim(
 		Updatable: false,
 	}
 
-	credentialType := fmt.Sprintf("%s#%s", schemaSuite.Metadata.Uris["jsonLdContext"], credentialReq.Type)
-	fmt.Println("credentialType str", credentialType)
+	schemaID, err := merklize.TypeIDFromContext(schemaBytes, credentialReq.Type)
+	if err != nil {
+		return nil, err
+	}
 
 	coreClaim, err := jsonProcessor.ParseClaim(
 		context.Background(),
 		vc,
-		credentialType,
+		schemaID,
 		schemaBytes,
 		&opts,
 	)
