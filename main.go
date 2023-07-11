@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,12 +26,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.ngrok.com/ngrok"
+	ngrokCfg "golang.ngrok.com/ngrok/config"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+var isDevFlag = flag.Bool("dev", false, "run in dev mode")
+
 func main() {
+	flag.Parse()
+
 	cr, err := initRepository()
 	if err != nil {
 		log.Fatal("failed connect to mongodb:", err)
@@ -69,12 +76,37 @@ func main() {
 			r.Get("/identities/{identifier}/claims", h.GetUserVCs)
 			r.Get("/identities/{identifier}/claims/{claimId}", h.GetUserVCByID)
 			r.Get("/identities/{identifier}/claims/revocation/status/{nonce}", h.IsRevokedClaim)
+			r.Get("/identities/{identifier}/claims/offer", h.GetOffer)
 			r.Post("/identities/{identifier}/claims/revoke/{nonce}", h.RevokeClaim)
 			r.Post("/agent", h.Agent)
 		})
 	})
 
+	if *isDevFlag {
+		go func() {
+			err := runNgrok(r)
+			if err != nil {
+				log.Fatalf("can't run ngrok, err: %v", err)
+			}
+		}()
+	}
+
 	http.ListenAndServe(":3333", r)
+}
+
+func runNgrok(r chi.Router) error {
+	tun, err := ngrok.Listen(
+		context.Background(),
+		ngrokCfg.HTTPEndpoint(),
+		ngrok.WithAuthtokenFromEnv(),
+	)
+	if err != nil {
+		return err
+	}
+	url := tun.URL()
+	common.ExternalServerHost = url
+	fmt.Println("ngrok url: ", url)
+	return http.Serve(tun, r)
 }
 
 func initRepository() (*repository.CredentialRepository, error) {

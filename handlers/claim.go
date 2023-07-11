@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
+	"github.com/0xPolygonID/onchain-issuer-demo/common"
 	"github.com/0xPolygonID/onchain-issuer-demo/services"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/iden3/iden3comm"
+	"github.com/iden3/iden3comm/protocol"
 )
 
 type Handlers struct {
@@ -99,4 +103,40 @@ func (h *Handlers) GetUserVCByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/ld+json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(vc)
+}
+
+func (h *Handlers) GetOffer(w http.ResponseWriter, r *http.Request) {
+	issuer := chi.URLParam(r, "identifier")
+	claimId := r.URL.Query().Get("claimId")
+	if claimId == "" {
+		http.Error(w, "claimId query param is required", http.StatusBadRequest)
+		return
+	}
+	subject := r.URL.Query().Get("subject")
+	if subject == "" {
+		http.Error(w, "subject query param is required", http.StatusBadRequest)
+		return
+	}
+
+	offerMessage := protocol.CredentialsOfferMessage{
+		ID:       uuid.New().String(),
+		ThreadID: uuid.New().String(),
+		Typ:      "application/iden3-plain-json",
+		Type:     protocol.CredentialOfferMessageType,
+		Body: protocol.CredentialsOfferMessageBody{
+			URL: fmt.Sprintf("%s/api/v1/agent", strings.Trim(common.ExternalServerHost, "/")),
+			Credentials: []protocol.CredentialOffer{
+				{
+					ID:          claimId,
+					Description: "BalanceCredential",
+				},
+			},
+		},
+		From: issuer,
+		To:   subject,
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(offerMessage)
 }
