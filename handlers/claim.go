@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/iden3/iden3comm"
+	"github.com/iden3/iden3comm/packers"
 	"github.com/iden3/iden3comm/protocol"
 )
 
@@ -121,7 +122,7 @@ func (h *Handlers) GetOffer(w http.ResponseWriter, r *http.Request) {
 	offerMessage := protocol.CredentialsOfferMessage{
 		ID:       uuid.New().String(),
 		ThreadID: uuid.New().String(),
-		Typ:      "application/iden3-plain-json",
+		Typ:      packers.MediaTypePlainMessage,
 		Type:     protocol.CredentialOfferMessageType,
 		Body: protocol.CredentialsOfferMessageBody{
 			URL: fmt.Sprintf("%s/api/v1/agent", strings.Trim(common.ExternalServerHost, "/")),
