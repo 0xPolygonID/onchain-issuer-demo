@@ -9,11 +9,11 @@ require (
 	github.com/iden3/contracts-abi/state/go/abi v1.0.0-beta.3
 	github.com/iden3/go-circuits v1.0.3
 	github.com/iden3/go-iden3-core v1.0.2
-	github.com/iden3/go-iden3-core/v2 v2.0.0-20230519124718-42b31ff46f37
+	github.com/iden3/go-iden3-core/v2 v2.0.0
 	github.com/iden3/go-jwz v1.0.0
 	github.com/iden3/go-merkletree-sql/v2 v2.0.4
 	github.com/iden3/go-schema-processor v1.3.1
-	github.com/iden3/iden3comm v1.0.0
+	github.com/iden3/iden3comm v1.0.0-beta.1
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	go.mongodb.org/mongo-driver v1.11.6

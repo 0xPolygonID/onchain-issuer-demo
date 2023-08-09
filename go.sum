@@ -70,8 +70,8 @@ github.com/iden3/go-circuits v1.0.3 h1:mZqHvuXIAjCQdwRFiq2472KYfKHtzomYoKu0BtF3+
 github.com/iden3/go-circuits v1.0.3/go.mod h1:YbuzfvSyr8BwNHnjRJEvnRQ2lJKzVQ9Sgz3OAdqv5Is=
 github.com/iden3/go-iden3-core v1.0.2 h1:HwNDFeqcUv4ybZj5tH+58JKWKarn/qqBpNCqTLxGP0Y=
 github.com/iden3/go-iden3-core v1.0.2/go.mod h1:X4PjlJG8OsEQEsSbzzYqqAk2olYGZ2nuGqiUPyEYjOo=
-github.com/iden3/go-iden3-core/v2 v2.0.0-20230519124718-42b31ff46f37 h1:JPH0tMr8geJO0vLhwTZkopHqm35ARCjCIKNab9rc6QI=
-github.com/iden3/go-iden3-core/v2 v2.0.0-20230519124718-42b31ff46f37/go.mod h1:L9PxhWPvoS9qTb3inEkZBm1RpjHBt+VTwvxssdzbAdw=
+github.com/iden3/go-iden3-core/v2 v2.0.0 h1:sQEuuq3RLfyYSY8qPiqxQ6YBpGbiAwepHJD/vjf1adA=
+github.com/iden3/go-iden3-core/v2 v2.0.0/go.mod h1:L9PxhWPvoS9qTb3inEkZBm1RpjHBt+VTwvxssdzbAdw=
 github.com/iden3/go-iden3-crypto v0.0.15 h1:4MJYlrot1l31Fzlo2sF56u7EVFeHHJkxGXXZCtESgK4=
 github.com/iden3/go-iden3-crypto v0.0.15/go.mod h1:dLpM4vEPJ3nDHzhWFXDjzkn1qHoBeOT/3UEhXsEsP3E=
 github.com/iden3/go-jwz v1.0.0 h1:tRyAMK9unf21z8uNvJ8V2LFvXdlYZe7pgRE7V19Q/vs=
@@ -88,8 +88,8 @@ github.com/iden3/go-rapidsnark/witness v0.0.6 h1:p+6QBymSV3XWm1kB2PL2vlXxKXJN8Gy
 github.com/iden3/go-rapidsnark/witness v0.0.6/go.mod h1:57IHQpnvx0CeS6cAT07oN/lqwT5LRc4zicYoZ1cnAPE=
 github.com/iden3/go-schema-processor v1.3.1 h1:LJfFInfYGMOp0bTKKC17R8q4XI+VtqhFLPTEqnOIvlM=
 github.com/iden3/go-schema-processor v1.3.1/go.mod h1:NwJ1nuGdRlCFaN1/V6mS0AOAdvpLcGf4KKq0mluLG7U=
-github.com/iden3/iden3comm v1.0.0 h1:ZF796O5oftSFZDhPG5hTcBjY9Yw2faSajD47cjYdSJA=
-github.com/iden3/iden3comm v1.0.0/go.mod h1:2rEv35F6gE0XJjP89sCOR0Im4/r6uG2jo8Ui5p5bzE4=
+github.com/iden3/iden3comm v1.0.0-beta.1 h1:/RCtOe6yitzFr6a+VKbcQZoiJIw8j4bjTVTuNq/f2Ok=
+github.com/iden3/iden3comm v1.0.0-beta.1/go.mod h1:jhj1N7+6uaRVHnIjyKqSLO6oCXS6rPvNVUMlq8ydk64=
 github.com/iden3/wasmer-go v0.0.1 h1:TZKh8Se8B/73PvWrcu+FTU9L1k5XYAmtFbioj7l0Uog=
 github.com/iden3/wasmer-go v0.0.1/go.mod h1:ZnZBAO012M7o+Q1INXLRIxKQgEcH2FuwL0Iga8A4ufg=
 github.com/inconshreveable/log15 v3.0.0-testing.3+incompatible h1:zaX5fYT98jX5j4UhO/WbfY8T1HkgVrydiDMC9PWqGCo=
