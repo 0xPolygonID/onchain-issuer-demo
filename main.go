@@ -99,6 +99,7 @@ func runNgrok(r chi.Router) error {
 		context.Background(),
 		ngrokCfg.HTTPEndpoint(),
 		ngrok.WithAuthtokenFromEnv(),
+		ngrok.WithRegion("us"),
 	)
 	if err != nil {
 		return err
