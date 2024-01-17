@@ -210,7 +210,7 @@ func buildMTPProof(
 	if err != nil {
 		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
-	bigState, err := onChainIssuer.GetIdentityLatestState(&bind.CallOpts{})
+	bigState, err := onChainIssuer.GetLatestPublishedState(&bind.CallOpts{})
 	if err != nil {
 		return verifiable.Iden3SparseMerkleTreeProof{}, err
 	}
